@@ -7,6 +7,6 @@ func main() {
 	fullGolang := "Watch Nana's full course"
 	reward := "Bananabread"
 
-	var taskItems = []string{shortGolang, fullGolang, reward}
+	taskItems := []string{shortGolang, fullGolang, reward}
 	fmt.Println(taskItems)
 }
