@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo List</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 0 20px;
+      color: #333;
+    }
+    h1 { margin-bottom: 24px; }
+    .add-form {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+    .add-form input[type=text] {
+      flex: 1;
+      padding: 8px 12px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn-add    { background: #4caf50; color: white; }
+    .btn-toggle { background: #2196f3; color: white; }
+    .btn-delete { background: #f44336; color: white; }
+    ul { list-style: none; }
+    li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .task-title { flex: 1; font-size: 1rem; }
+    .task-title.done { text-decoration: line-through; color: #999; }
+    .meta { font-size: 0.75rem; color: #aaa; white-space: nowrap; }
+    form { display: inline; }
+    .empty { color: #999; padding: 16px 0; }
+  </style>
+</head>
+<body>
+  <h1>Todo List</h1>
+
+  <form class="add-form" method="POST" action="/add">
+    <input type="text" name="task" placeholder="What needs to be done?" required>
+    <button class="btn-add" type="submit">Add</button>
+  </form>
+
+  <ul>
+    {{range .}}
+    <li>
+      <form method="POST" action="/toggle">
+        <input type="hidden" name="id" value="{{.ID}}">
+        <button class="btn-toggle" type="submit">{{if .Completed}}Undo{{else}}Done{{end}}</button>
+      </form>
+
+      <span class="task-title {{if .Completed}}done{{end}}">{{.Title}}</span>
+      <span class="meta">{{.CreatedAt.Format "Jan 2, 2006"}}</span>
+
+      <form method="POST" action="/delete">
+        <input type="hidden" name="id" value="{{.ID}}">
+        <button class="btn-delete" type="submit">Delete</button>
+      </form>
+    </li>
+    {{else}}
+    <li class="empty">No tasks yet. Add one above!</li>
+    {{end}}
+  </ul>
+</body>
+</html>

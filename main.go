@@ -2,43 +2,32 @@ package main
 
 import (
 	"fmt"
+	"html/template"
+	"log"
 	"net/http"
+
+	"github.com/erikdev/go-todo/config"
+	"github.com/erikdev/go-todo/database"
+	"github.com/erikdev/go-todo/handlers"
+	"github.com/erikdev/go-todo/store"
 )
 
 func main() {
+	cfg := config.Load()
 
-	fmt.Println("### Welcome to our to our Todo list App ###")
-	// var shortGolang = "Watch the Go crash course"
-	// var fullGolang = "Watch Nana's full course"
-	// var reward = "Bananabread"
+	db := database.Open(cfg.DBPath)
+	defer db.Close()
 
-	// var taskItems = []string{shortGolang, fullGolang, reward}
-	// printTasks(taskItems)
-	// taskItems = addTask(taskItems, "Go to the gym")
-	// printTasks(taskItems)
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello, welcome to our Todo list App!")
-	})
+	tmpl := template.Must(template.ParseFiles("templates/index.html"))
 
-	http.HandleFunc("/todos", func(w http.ResponseWriter, r *http.Request) {
-		taskItems := []string{"Watch the Go crash course", "Watch Nana's full course", "Bananabread"}
-		for i, task := range taskItems {
-			fmt.Fprintf(w, "%d. %s\n", i+1, task)
-		}
-	})
+	todoStore := store.NewTodoStore(db)
+	todoHandler := handlers.NewTodoHandler(todoStore, tmpl)
 
-	http.ListenAndServe(":8080", nil)
+	http.HandleFunc("/", todoHandler.HandleIndex)
+	http.HandleFunc("/add", todoHandler.HandleAdd)
+	http.HandleFunc("/toggle", todoHandler.HandleToggle)
+	http.HandleFunc("/delete", todoHandler.HandleDelete)
 
-}
-
-func printTasks(taskItems []string) {
-	fmt.Println("List of my Todos")
-
-	for i, task := range taskItems {
-		fmt.Printf("%d. %s\n", i+1, task)
-	}
-}
-
-func addTask(taskItems []string, task string) []string {
-	return append(taskItems, task)
+	fmt.Printf("Listening on http://localhost:%s\n", cfg.Port)
+	log.Fatal(http.ListenAndServe(":"+cfg.Port, nil))
 }
